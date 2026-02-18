@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>巴特活力早餐 | BUTTER 點單系統</title>
+    <link rel="stylesheet" href="output.css">
+</head>
+
+<body class="bg-gray-50 text-gray-900 antialiased">
+
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-2xl font-black italic tracking-tighter cursor-pointer" onclick="showPage('menu')">
+                BUTTER <span class="text-primary">Vitality Breakfast</span>
+            </div>
+            <div class="hidden md:flex space-x-8 text-sm font-bold">
+                <button onclick="showPage('menu')" id="nav-menu" class="nav-link text-primary">即時點單</button>
+                <button onclick="showPage('contact')" id="nav-contact" class="nav-link text-gray-400">聯絡我們</button>
+            </div>
+            <button onclick="toggleMobileMenu()" class="md:hidden text-gray-900 focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7">
+                    </path>
+                </svg>
+            </button>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t p-6 flex flex-col space-y-4 shadow-lg">
+            <button onclick="handleMobileNav('menu')" class="text-left font-bold text-primary">即時點單</button>
+            <button onclick="handleMobileNav('contact')" class="text-left font-bold text-gray-400">聯絡我們</button>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-6 py-12 flex flex-col lg:flex-row gap-8">
+        <div class="flex-grow">
+            <section id="page-menu" class="page-section fade-in">
+                <header class="mb-10">
+                    <h1 class="text-3xl font-black mb-2">早安！你好</h1>
+                    <p class="text-gray-400 text-sm">請選擇您喜愛的餐點加入訂單。</p>
+                </header>
+                <div id="product-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                </div>
+            </section>
+
+            <section id="page-contact" class="page-section hidden fade-in">
+                <div class="bg-white p-10 rounded-lg shadow-sm border border-gray-100 max-w-2xl">
+                    <h2 class="text-3xl font-black mb-6">聯絡我們</h2>
+                    <div class="space-y-6 text-gray-600">
+                        <p>📍 店址：桃園市民光路 101 號</p>
+                        <p>📞 訂購專線：(03) 347-4222</p>
+                    </div>
+                </div>
+                <div class="mt-8 rounded-lg overflow-hidden shadow-sm border border-gray-100 max-w-2xl">
+                    <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3615.8835076439304!2d121.30308297461947!3d25.00407403949735!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x34681faaf83ebdb1%3A0x5f8c4629f2bb810f!2z5be054m55rS75Yqb5pep6aSQ!5e0!3m2!1szh-TW!2stw!4v1771428560031!5m2!1szh-TW!2stw"
+                        width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+            </section>
+        </div>
+
+        <div class="w-full lg:w-96 flex-shrink-0">
+            <div class="bg-white p-8 rounded-lg shadow-lg sticky top-28 border border-gray-100">
+                <h3 class="text-xl font-black mb-6 italic">🛒 您的訂單</h3>
+                <div id="cart-items" class="space-y-4 mb-6 max-h-[50vh] overflow-y-auto pr-2">
+                    <p class="text-gray-400 text-center py-10 text-sm italic">尚未選取餐點</p>
+                </div>
+                <div class="border-t pt-6">
+                    <div class="flex justify-between items-center mb-8">
+                        <span class="text-gray-400 font-bold uppercase text-[10px]">總計金額</span>
+                        <span id="total-price" class="text-3xl font-black text-gray-900">$0</span>
+                    </div>
+                    <button class="w-full btn-primary py-4 text-lg shadow-xl shadow-yellow-200"
+                        onclick="checkout()">確認下單</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let cart = [];
+
+        async function fetchMenu() {
+            try {
+                const response = await fetch('http://localhost:3001/api/menu');
+                const data = await response.json();
+                renderMenu(data);
+            } catch (error) {
+                console.error('無法獲取菜單資料:', error);
+                document.getElementById('product-container').innerHTML = `<p class="text-red-500">API 連線失敗，請檢查後端是否啟動於 3001</p>`;
+            }
+        }
+
+        function renderMenu(items) {
+            const container = document.getElementById('product-container');
+            container.innerHTML = items.map(p => `
+                <div class="meals-card-container group fade-in">
+                    <div class="aspect-[4/3] overflow-hidden bg-gray-100">
+                        <img src="${p.image_url}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                    </div>
+                    <div class="p-8 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-2 gap-4">
+                            <h4 class="font-bold text-gray-900 text-lg group-hover:text-primary">${p.name}</h4>
+                            <span class="font-black text-gray-900">$${p.price}</span>
+                        </div>
+                        <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-4">${p.category}</span>
+                        <p class="text-xs text-gray-400 line-clamp-2 mb-6 font-light">${p.description || ''}</p>
+                        <button class="mt-auto btn-primary w-full py-2.5 text-xs" onclick="addToCart('${p.name}', ${p.price})">ADD TO ORDER</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addToCart(name, price) {
+            cart.push({ name, price });
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const container = document.getElementById('cart-items');
+            if (cart.length === 0) {
+                container.innerHTML = '<p class="text-gray-400 text-center py-10 text-sm italic">您的購物籃是空的</p>';
+                document.getElementById('total-price').innerText = '$0';
+                return;
+            }
+            container.innerHTML = cart.map((item, index) => `
+                <div class="flex justify-between items-center bg-gray-50 p-3 rounded-lg transition-all duration-200 hover:bg-gray-100">
+                    <span class="text-sm font-bold text-gray-900">${item.name}</span>
+                    <button onclick="removeItem(${index})" class="text-gray-300 hover:text-red-500 hover:scale-125 transition-all duration-200">✕</button>
+                </div>
+            `).join('');
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            document.getElementById('total-price').innerText = `$${total}`;
+        }
+
+        function removeItem(index) {
+            cart.splice(index, 1);
+            updateCartUI();
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page-section').forEach(sec => sec.classList.add('hidden'));
+            document.getElementById('page-' + pageId).classList.remove('hidden');
+
+            // 更新導航按鈕的顏色
+            document.querySelectorAll('.nav-link').forEach(btn => {
+                btn.classList.remove('text-primary');
+                btn.classList.add('text-gray-400');
+            });
+            document.getElementById('nav-' + pageId).classList.remove('text-gray-400');
+            document.getElementById('nav-' + pageId).classList.add('text-primary');
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        }
+
+        function handleMobileNav(pageId) {
+            showPage(pageId);
+            toggleMobileMenu();
+        }
+
+        function checkout() {
+            if (cart.length === 0) return alert('請先選擇餐點！');
+            alert(`訂單已送出！總金額：$${document.getElementById('total-price').innerText}`);
+            cart = [];
+            updateCartUI();
+        }
+
+        fetchMenu();
+    </script>
+</body>
+
+</html>

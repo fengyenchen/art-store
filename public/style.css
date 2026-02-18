@@ -35,12 +35,22 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-gray-900 text-white font-bold py-2 px-6 rounded-full transition-all duration-300;
-    @apply hover:bg-[--color-primary] hover:text-black hover:shadow-lg active:scale-95;
+    @apply bg-gray-900 text-white font-bold py-2 px-6 rounded-full cursor-pointer;
+    @apply transition-all duration-300 ease-out transform;
+    @apply hover:bg-primary hover:text-black hover:shadow-2xl hover:-translate-y-1;
+    @apply active:scale-95 active:translate-y-0 active:shadow-lg;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
   }
 
-  .nft-card-container {
-    @apply bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden;
+  .meals-card-container {
+    @apply bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden;
     @apply hover:shadow-xl transition-all duration-500 flex flex-col h-full;
+    @apply hover:-translate-y-1 cursor-pointer;
+  }
+
+  .nav-link {
+    @apply transition-all duration-300 ease-out cursor-pointer;
+    @apply hover:scale-105;
+    @apply focus:outline-none;
   }
 }
