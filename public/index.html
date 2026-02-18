@@ -19,21 +19,22 @@
                 <button onclick="showPage('menu')" id="nav-menu" class="nav-link text-primary">即時點單</button>
                 <button onclick="showPage('contact')" id="nav-contact" class="nav-link text-gray-400">聯絡我們</button>
             </div>
-            <button onclick="toggleMobileMenu()" class="md:hidden text-gray-900 focus:outline-none">
+            <button onclick="toggleMobileMenu()"
+                class="md:hidden text-gray-900 focus:outline-none p-2 -mr-2 active:scale-90 transition-transform">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7">
                     </path>
                 </svg>
             </button>
         </div>
-        <div id="mobile-menu" class="hidden md:hidden bg-white border-t p-6 flex flex-col space-y-4 shadow-lg">
-            <button onclick="handleMobileNav('menu')" class="text-left font-bold text-primary">即時點單</button>
-            <button onclick="handleMobileNav('contact')" class="text-left font-bold text-gray-400">聯絡我們</button>
+        <div id="mobile-menu" class="md:hidden bg-white border-t p-3 flex flex-col space-y-2 shadow-lg">
+            <button onclick="handleMobileNav('menu')" class="mobile-nav-btn text-primary">即時點單</button>
+            <button onclick="handleMobileNav('contact')" class="mobile-nav-btn text-gray-400">聯絡我們</button>
         </div>
     </nav>
 
     <main class="container mx-auto px-6 py-12 flex flex-col lg:flex-row gap-8">
-        <div class="flex-grow">
+        <div class="grow">
             <section id="page-menu" class="page-section fade-in">
                 <header class="mb-10">
                     <h1 class="text-3xl font-black mb-2">早安！你好</h1>
@@ -60,7 +61,7 @@
             </section>
         </div>
 
-        <div class="w-full lg:w-96 flex-shrink-0">
+        <div class="w-full lg:w-96 shrink-0">
             <div class="bg-white p-8 rounded-lg shadow-lg sticky top-28 border border-gray-100">
                 <h3 class="text-xl font-black mb-6 italic">🛒 您的訂單</h3>
                 <div id="cart-items" class="space-y-4 mb-6 max-h-[50vh] overflow-y-auto pr-2">
@@ -71,105 +72,16 @@
                         <span class="text-gray-400 font-bold uppercase text-[10px]">總計金額</span>
                         <span id="total-price" class="text-3xl font-black text-gray-900">$0</span>
                     </div>
-                    <button class="w-full btn-primary py-4 text-lg shadow-xl shadow-yellow-200"
-                        onclick="checkout()">確認下單</button>
+                    <button class="w-full btn-primary py-4 text-lg shadow-xl" onclick="checkout()">確認下單</button>
                 </div>
             </div>
         </div>
     </main>
 
-    <script>
-        let cart = [];
-
-        async function fetchMenu() {
-            try {
-                const response = await fetch('http://localhost:3001/api/menu');
-                const data = await response.json();
-                renderMenu(data);
-            } catch (error) {
-                console.error('無法獲取菜單資料:', error);
-                document.getElementById('product-container').innerHTML = `<p class="text-red-500">API 連線失敗，請檢查後端是否啟動於 3001</p>`;
-            }
-        }
-
-        function renderMenu(items) {
-            const container = document.getElementById('product-container');
-            container.innerHTML = items.map(p => `
-                <div class="meals-card-container group fade-in">
-                    <div class="aspect-[4/3] overflow-hidden bg-gray-100">
-                        <img src="${p.image_url}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
-                    </div>
-                    <div class="p-8 flex flex-col flex-grow">
-                        <div class="flex justify-between items-start mb-2 gap-4">
-                            <h4 class="font-bold text-gray-900 text-lg group-hover:text-primary">${p.name}</h4>
-                            <span class="font-black text-gray-900">$${p.price}</span>
-                        </div>
-                        <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-4">${p.category}</span>
-                        <p class="text-xs text-gray-400 line-clamp-2 mb-6 font-light">${p.description || ''}</p>
-                        <button class="mt-auto btn-primary w-full py-2.5 text-xs" onclick="addToCart('${p.name}', ${p.price})">ADD TO ORDER</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function addToCart(name, price) {
-            cart.push({ name, price });
-            updateCartUI();
-        }
-
-        function updateCartUI() {
-            const container = document.getElementById('cart-items');
-            if (cart.length === 0) {
-                container.innerHTML = '<p class="text-gray-400 text-center py-10 text-sm italic">您的購物籃是空的</p>';
-                document.getElementById('total-price').innerText = '$0';
-                return;
-            }
-            container.innerHTML = cart.map((item, index) => `
-                <div class="flex justify-between items-center bg-gray-50 p-3 rounded-lg transition-all duration-200 hover:bg-gray-100">
-                    <span class="text-sm font-bold text-gray-900">${item.name}</span>
-                    <button onclick="removeItem(${index})" class="text-gray-300 hover:text-red-500 hover:scale-125 transition-all duration-200">✕</button>
-                </div>
-            `).join('');
-            const total = cart.reduce((sum, item) => sum + item.price, 0);
-            document.getElementById('total-price').innerText = `$${total}`;
-        }
-
-        function removeItem(index) {
-            cart.splice(index, 1);
-            updateCartUI();
-        }
-
-        function showPage(pageId) {
-            document.querySelectorAll('.page-section').forEach(sec => sec.classList.add('hidden'));
-            document.getElementById('page-' + pageId).classList.remove('hidden');
-
-            // 更新導航按鈕的顏色
-            document.querySelectorAll('.nav-link').forEach(btn => {
-                btn.classList.remove('text-primary');
-                btn.classList.add('text-gray-400');
-            });
-            document.getElementById('nav-' + pageId).classList.remove('text-gray-400');
-            document.getElementById('nav-' + pageId).classList.add('text-primary');
-        }
-
-        function toggleMobileMenu() {
-            document.getElementById('mobile-menu').classList.toggle('hidden');
-        }
-
-        function handleMobileNav(pageId) {
-            showPage(pageId);
-            toggleMobileMenu();
-        }
-
-        function checkout() {
-            if (cart.length === 0) return alert('請先選擇餐點！');
-            alert(`訂單已送出！總金額：$${document.getElementById('total-price').innerText}`);
-            cart = [];
-            updateCartUI();
-        }
-
-        fetchMenu();
-    </script>
+    <script src="js/cart.js"></script>
+    <script src="js/menu.js"></script>
+    <script src="js/nav.js"></script>
+    <script src="js/app.js"></script>
 </body>
 
 </html>
