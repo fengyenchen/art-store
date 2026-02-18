@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+/* === 指定要掃描的文件 === */
+
+@source "../*.html";
+@source "./**/*.{html,js}";
+
+/* === 自訂主題 === */
+
+@theme {
+  --color-primary: #f7d00a;
+}
+
+/* === 自訂樣式 === */
+@layer base {
+  body {
+    @apply antialiased;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 1.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { 
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-gray-900 text-white font-bold py-2 px-6 rounded-full transition-all duration-300;
+    @apply hover:bg-[--color-primary] hover:text-black hover:shadow-lg active:scale-95;
+  }
+
+  .nft-card-container {
+    @apply bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden;
+    @apply hover:shadow-xl transition-all duration-500 flex flex-col h-full;
+  }
+}
