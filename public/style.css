@@ -44,6 +44,65 @@
     @apply transition-colors hover:bg-yellow-50 hover:border-yellow-200;
   }
 
+  .art-option-row {
+    @apply w-full flex items-stretch border border-gray-100 rounded-xl overflow-hidden bg-white;
+    @apply transition-colors hover:border-yellow-200;
+  }
+
+  .art-plus-btn {
+    @apply w-11 shrink-0 border-r border-gray-100 text-yellow-600 font-black text-lg cursor-pointer;
+    @apply transition-colors hover:bg-yellow-50 focus:outline-none focus:bg-yellow-50;
+  }
+
+  .art-detail-trigger {
+    @apply flex-1 flex justify-between items-center text-xs px-3 py-3 cursor-pointer;
+    @apply transition-colors hover:bg-yellow-50 focus:outline-none focus:bg-yellow-50;
+  }
+
+  .product-detail-overlay {
+    @apply fixed inset-0 bg-black/40 z-40 p-2 sm:p-4;
+    @apply flex items-start sm:items-center justify-center overflow-y-auto;
+  }
+
+  .product-detail-drawer {
+    @apply fixed left-1/2 top-2 sm:top-1/2 -translate-x-1/2 sm:-translate-y-1/2;
+    @apply w-[min(96vw,760px)] max-h-[calc(100dvh-1rem)] sm:max-h-[90vh] overflow-hidden bg-white z-50 shadow-2xl border border-gray-100 rounded-3xl;
+    @apply flex flex-col;
+    @apply transition-all duration-300;
+  }
+
+  .product-detail-option {
+    @apply w-full flex justify-between items-center text-xs border border-gray-100 p-3 rounded-xl cursor-pointer;
+    @apply transition-colors hover:bg-yellow-50 hover:border-yellow-200;
+  }
+
+  .product-detail-option.is-selected {
+    @apply bg-yellow-50 border-yellow-200;
+  }
+
+  .product-detail-add-btn {
+    @apply w-full bg-gray-900 text-white font-bold py-4 px-6 rounded-2xl cursor-pointer shadow-lg;
+    @apply transition-all duration-300 ease-out transform;
+    @apply hover:bg-primary hover:text-black hover:shadow-2xl hover:-translate-y-1;
+    @apply active:scale-95 active:translate-y-0 active:shadow-lg;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
+  }
+
+  .product-detail-layout {
+    @apply flex flex-col gap-4;
+  }
+
+  .product-detail-main {
+    @apply flex flex-col gap-4;
+  }
+
+  @media (min-width: 768px) {
+    .product-detail-layout {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      @apply grid gap-6 items-start;
+    }
+  }
+
   .cart-item {
     @apply flex justify-between items-center bg-gray-50 p-4 rounded-2xl;
     animation: fadeIn 1.2s ease-in-out;

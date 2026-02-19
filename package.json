@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon server.js",
-    "css": "npx @tailwindcss/cli -i ./public/style.css -o ./public/output.css --watch"
+    "css": "npx @tailwindcss/cli -i ./public/style.css -o ./public/output.css --watch",
+    "build": "npx @tailwindcss/cli -i ./public/style.css -o ./public/output.css"
   },
   "keywords": [],
   "author": "",

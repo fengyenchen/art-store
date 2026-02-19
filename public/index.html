@@ -32,9 +32,11 @@
         </div>
     </main>
 
-    <div id="cart-overlay" onclick="closeCart()" class="hidden fixed inset-0 bg-black/40 z-40"></div>
+    <div id="cart-overlay" onclick="closeCart()" class="hidden fixed inset-0 bg-black/40 z-40" style="z-index: 70;">
+    </div>
     <aside id="cart-drawer"
-        class="fixed top-0 right-0 h-full w-full sm:w-96 bg-white shadow-2xl border-l border-gray-100 z-50 transform translate-x-full transition-transform duration-300">
+        class="fixed top-0 right-0 h-full w-full sm:w-96 bg-white shadow-2xl border-l border-gray-100 z-50 transform translate-x-full opacity-0 transition-all duration-300"
+        style="z-index: 80;">
         <div class="h-full p-8 flex flex-col">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-black mb-6 italic">🛒 您的訂單清單</h3>
@@ -55,105 +57,32 @@
         </div>
     </aside>
 
-    <script>
-        let cart = [];
+    <!-- JavaScript -->
+    <!-- 載入順序很重要：state → 其他功能模組 → app (初始化) -->
 
-        // 1. 從 API 抓取四表整合後的資料
-        async function fetchGallery() {
-            try {
-                const response = await fetch('http://localhost:3001/api/artworks');
-                const artworks = await response.json();
-                renderGallery(artworks);
-            } catch (error) {
-                console.error('抓取失敗:', error);
-            }
-        }
+    <!-- 1. 全域狀態管理 -->
+    <script src="js/state.js"></script>
 
-        // 2. 渲染藝廊卡片
-        function renderGallery(artworks) {
-            const container = document.getElementById('gallery-container');
-            container.innerHTML = artworks.map(art =>
-                art.editions.map(ed => `
-                    <div class="meals-card-container rounded-3xl group">
-                        <div class="aspect-square overflow-hidden bg-gray-100">
-                            <img src="${ed.image}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
-                        </div>
-                        <div class="p-8">
-                            <h4 class="font-black text-xl mb-1">${art.title}</h4>
-                            <p class="text-yellow-600 text-[10px] font-bold uppercase tracking-widest mb-4">${ed.subtitle}</p>
-                            <p class="text-xs text-gray-400 mb-6 font-light leading-relaxed">${ed.description}</p>
-                            
-                            <div class="space-y-2">
-                                ${ed.products.map(item => `
-                                    <button onclick="addToCart('${item.summary}', ${item.price})" 
-                                            class="art-option-btn">
-                                        <span class="font-medium text-gray-600">${item.type}</span>
-                                        <span class="font-black text-gray-900">$${item.price}</span>
-                                    </button>
-                                `).join('')}
-                            </div>
-                        </div>
-                    </div>
-                `).join('')
-            ).join('');
-        }
+    <!-- 2. API 資料抓取 -->
+    <script src="js/api.js"></script>
 
-        // 3. 加入購物車邏輯：利用資料庫自動生成的 item_summary
-        function addToCart(summary, price) {
-            cart.push({ summary, price });
-            updateCartUI();
-        }
+    <!-- 3. 商品細節彈窗 -->
+    <script src="js/detail.js"></script>
 
-        function updateCartUI() {
-            const container = document.getElementById('cart-items');
-            const totalDisplay = document.getElementById('total-price');
-            const cartCount = document.getElementById('cart-count');
-            cartCount.innerText = `(${cart.length})`;
+    <!-- 4. 藝廊渲染 -->
+    <script src="js/gallery.js"></script>
 
-            if (cart.length === 0) {
-                container.innerHTML = '<p class="text-gray-400 text-center py-10 text-sm italic">您的購物籃是空的</p>';
-                totalDisplay.innerText = '$0';
-                return;
-            }
+    <!-- 5. 購物車邏輯 -->
+    <script src="js/cart.js"></script>
 
-            container.innerHTML = cart.map((item, index) => `
-                <div class="cart-item">
-                    <div>
-                        <p class="text-[10px] font-bold text-gray-900 leading-tight">${item.summary}</p>
-                        <p class="text-xs font-black text-yellow-600 mt-1">$${item.price}</p>
-                    </div>
-                    <button onclick="removeItem(${index})" class="cart-remove-btn">✕</button>
-                </div>
-            `).join('');
+    <!-- 6. UI 控制 -->
+    <script src="js/ui.js"></script>
 
-            const total = cart.reduce((sum, item) => sum + item.price, 0);
-            totalDisplay.innerText = `$${total}`;
-        }
+    <!-- 7. 結帳邏輯 -->
+    <script src="js/checkout.js"></script>
 
-        function removeItem(index) {
-            cart.splice(index, 1);
-            updateCartUI();
-        }
-
-        function checkout() {
-            if (cart.length === 0) return alert('請先選擇作品週邊！');
-            const detail = cart.map(i => i.summary).join('\n');
-            alert(`訂單準備送出！\n\n內容：\n${detail}\n\n(下一步：串接 LINE Messaging API)`);
-        }
-
-        function openCart() {
-            document.getElementById('cart-overlay').classList.remove('hidden');
-            document.getElementById('cart-drawer').classList.remove('translate-x-full');
-        }
-
-        function closeCart() {
-            document.getElementById('cart-overlay').classList.add('hidden');
-            document.getElementById('cart-drawer').classList.add('translate-x-full');
-        }
-
-        fetchGallery();
-        updateCartUI();
-    </script>
+    <!-- 8. 應用程式初始化 (最後載入) -->
+    <script src="js/app.js"></script>
 </body>
 
 </html>
