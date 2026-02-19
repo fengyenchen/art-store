@@ -1,25 +1,16 @@
 @import "tailwindcss";
 
-/* === 指定要掃描的文件 === */
-
 @source "../*.html";
 @source "./**/*.{html,js}";
-
-/* === 自訂主題 === */
 
 @theme {
   --color-primary: #f7d00a;
 }
 
-/* === 自訂樣式 === */
 @layer base {
   body {
     @apply antialiased;
   }
-}
-
-.fade-in {
-  animation: fadeIn 1.2s ease-in-out;
 }
 
 @keyframes fadeIn {
@@ -48,6 +39,21 @@
     @apply hover:-translate-y-1 cursor-pointer;
   }
 
+  .art-option-btn {
+    @apply w-full flex justify-between items-center text-xs border border-gray-100 p-3 rounded-xl;
+    @apply transition-colors hover:bg-yellow-50 hover:border-yellow-200;
+  }
+
+  .cart-item {
+    @apply flex justify-between items-center bg-gray-50 p-4 rounded-2xl;
+    animation: fadeIn 1.2s ease-in-out;
+  }
+
+  .cart-remove-btn {
+    @apply text-gray-300 transition-colors cursor-pointer;
+    @apply hover:text-red-500;
+  }
+
   .nav-link {
     @apply transition-all duration-300 ease-out cursor-pointer;
     @apply hover:scale-105;
@@ -59,6 +65,6 @@
     @apply active:scale-95;
     @apply hover:bg-gray-100;
     @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
-    @apply min-h-[48px] flex items-center;
+    @apply min-h-12 flex items-center;
   }
 }

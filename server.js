@@ -1,28 +1,85 @@
 const express = require('express');
 const cors = require('cors');
-const db = require('./models/db');
+const db = require('./models/db'); // 確保此檔案已配置連線池
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT;
+app.use(cors());
+app.use(express.json());
+app.use(express.static('public')); // 託管靜態資源
 
-// 中間件設定
-app.use(cors()); // 允許跨來源請求，讓前端網頁可以存取這個 API
-app.use(express.json()); // 解析 JSON 格式的請求
-app.use(express.static('public')); // 設定靜態檔案資料夾（放 index.html 用）
-
-// 取得所有菜單品項的 API
-app.get('/api/menu', async (req, res) => {
+/**
+ * 獲取所有藝術作品及其版本與週邊品項
+ * 整合四表查詢：artworks -> editions -> items -> variants
+ */
+app.get('/api/artworks', async (req, res) => {
     try {
-        const [rows] = await db.query('SELECT * FROM menu');
-        res.json(rows);
+        const query = `
+            SELECT 
+                a.id AS artwork_id, a.title, a.base_description,
+                e.id AS edition_id, e.subtitle, e.image_url, e.specific_description,
+                i.id AS item_id, i.final_price, i.item_summary, i.stock,
+                v.product_type
+            FROM artworks a
+            LEFT JOIN editions e ON a.id = e.artwork_id
+            LEFT JOIN items i ON e.id = i.edition_id
+            LEFT JOIN variants v ON i.variant_id = v.id
+            ORDER BY a.id, e.id;
+        `;
+        
+        const [rows] = await db.query(query);
+
+        // 資料聚合邏輯：將平坦的資料表結果轉換為巢狀 JSON 物件
+        const artworks = rows.reduce((acc, row) => {
+            // 1. 處理作品系列 (Artwork)
+            let art = acc.find(a => a.id === row.artwork_id);
+            if (!art) {
+                art = { 
+                    id: row.artwork_id, 
+                    title: row.title, 
+                    description: row.base_description, 
+                    editions: [] 
+                };
+                acc.push(art);
+            }
+
+            // 2. 處理特定版本 (Edition / Subtitle)
+            if (row.edition_id) {
+                let ed = art.editions.find(e => e.id === row.edition_id);
+                if (!ed) {
+                    ed = { 
+                        id: row.edition_id, 
+                        subtitle: row.subtitle, 
+                        image: row.image_url, 
+                        description: row.specific_description, 
+                        products: [] 
+                    };
+                    art.editions.push(ed);
+                }
+
+                // 3. 處理具體商品品項 (Item)
+                if (row.item_id) {
+                    ed.products.push({
+                        id: row.item_id,
+                        summary: row.item_summary, // 直接使用資料庫自動生成的摘要
+                        type: row.product_type,
+                        price: row.final_price,
+                        stock: row.stock
+                    });
+                }
+            }
+            return acc;
+        }, []);
+
+        res.json(artworks);
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: '資料庫查詢失敗' });
+        console.error('API Error:', err);
+        res.status(500).json({ error: '無法獲取作品資料庫內容' });
     }
 });
 
-// 啟動伺服器
+// 設定監聽埠口
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-    console.log(`伺服器已啟動：http://localhost:${PORT}`);
+    console.log(`數位藝術電商伺服器運行中: http://localhost:${PORT}`);
 });
